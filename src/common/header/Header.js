@@ -1,7 +1,11 @@
 import {
     Button,
     Tabs,
-    Tab
+    Tab,
+    Card,
+    CardHeader,
+    CardContent,
+    Typography
 } from "@material-ui/core";
 import "./Header.css";
 import Modal from "react-modal";
@@ -19,6 +23,7 @@ const customStyles = {
         bottom: "auto",
         marginRight: "-50%",
         transform: "translate(-50%, -50%)",
+        padding: "0"
     },
 };
 
@@ -27,7 +32,7 @@ class Header extends Component {
     constructor() {
         super();
         this.state = {
-            loggedIn: sessionStorage.getItem("access-token") == null ? false : true,
+            loggedIn: (sessionStorage.getItem("access-token") != 'undefined' && sessionStorage.getItem("access-token") != null) ? true : false,
             // loggedIn : false
         };
     }
@@ -55,6 +60,7 @@ class Header extends Component {
 
     closeModalHandler = () => {
         this.setState({ modalIsOpen: false });
+        this.setState({ loggedIn: (sessionStorage.getItem("access-token") != 'undefined' && sessionStorage.getItem("access-token") != null) ? true : false});
     };
 
     tabChangeHandler = (event, value) => {
@@ -68,7 +74,7 @@ class Header extends Component {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer " + sessionStorage.getItem("access-token")
             }
-        }).then((response) => response.json())
+        })
         .then((data) => this.logoutHandler(e))
     }
 
@@ -90,27 +96,33 @@ class Header extends Component {
         return (
             <div>
                 <header className="header">
-                    <img src={logo} alt="logo" className="app-logo" />
-                    {!this.state.loggedIn ? (
-                        <div className="login-button">
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={this.openModalHandler}
-                            >
-                                Login
-                            </Button>
-                        </div>
-                    ) : (
-                        <div className="login-button">
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={this.logoutClickHandler}
-                            >Logout</Button>
-                        </div>
-
-                    )}
+                    <div className="header-left-container">
+                        <img src={logo} alt="logo" className="app-logo" />
+                        <Typography variant="headline" component="h3" className="header-logo-text" >
+                            Doctor Finder
+                        </Typography>
+                    </div>
+                    <div className="header-right-container">
+                        {!this.state.loggedIn ? (
+                            <div className="login-button">
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={this.openModalHandler}
+                                >
+                                    Login
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="login-button">
+                                <Button
+                                    variant="contained"
+                                    color="secondary"
+                                    onClick={this.logoutClickHandler}
+                                >Logout</Button>
+                            </div>
+                        )}
+                    </div>
                 </header>
 
                 <Modal
@@ -120,25 +132,32 @@ class Header extends Component {
                     onRequestClose={this.closeModalHandler}
                     style={customStyles}
                 >
-                    {/* // two tabs for login and register */}
-                    <Tabs
-                        className="tabs"
-                        value={this.state.value}
-                        onChange={this.tabChangeHandler}
-                    >
-                        <Tab label="Login" />
-                        <Tab label="Register" />
-                    </Tabs>
+                    <Card className="cardStyle" >
+                        <CardHeader className="authentication-header"
+                            title="Authentication">
+                        </CardHeader>
+                        <CardContent className="authentication-card-content">
+                            {/* // two tabs for login and register */}
+                            <Tabs
+                                className="tabs"
+                                value={this.state.value}
+                                onChange={this.tabChangeHandler}
+                            >
+                                <Tab label="Login" />
+                                <Tab label="Register" />
+                            </Tabs>
 
-                    {/* Login Tab */}
-                    {this.state.value === 0 && (
-                        <Login closeModal={this.closeModalHandler}></Login>
-                    )}
+                            {/* Login Tab */}
+                            {this.state.value === 0 && (
+                                <Login closeModal={this.closeModalHandler}></Login>
+                            )}
 
-                    {/* Register tab */}
-                    {this.state.value === 1 && (
-                        <Register ></Register>
-                    )}
+                            {/* Register tab */}
+                            {this.state.value === 1 && (
+                                <Register ></Register>
+                            )}
+                        </CardContent>
+                    </Card>
                 </Modal>
             </div>
         );

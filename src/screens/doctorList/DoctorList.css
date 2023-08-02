@@ -21,16 +21,7 @@
     width: 600px;
 }
 
-.book-appointment-button{
-    background-color:blue;
-    width: 40%;
-    margin: 10px;
-    padding: 10px;
-}
-
-.view-details-button{
-    background-color:green;
-    width: 40%;
-    margin: 10px;
-    padding: 10px;
+.select-speciality-dropdown{
+    width: 250px;
+    align-self: center;
 }

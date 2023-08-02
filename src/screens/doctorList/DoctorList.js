@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import './DoctorList.css';
 import Modal from "react-modal";
-import { Button, Paper } from "@material-ui/core";
+import { Button, MenuItem, Paper, Select } from "@material-ui/core";
 import { Rating } from "@material-ui/lab";
 import BookAppointment from "./BookAppointment";
 import DoctorDetails from "./DoctorDetails";
@@ -50,7 +50,7 @@ class DoctorList extends Component {
                 .then((response) => this.loadPrep())
 
         } catch (error) {
-            console.error("Unable to fecth doctors details", error);
+            console.error("Unable to fetch doctors details", error);
         }
     }
 
@@ -98,14 +98,14 @@ class DoctorList extends Component {
                 <p>Select Speciality</p>
                 <div className="doctor-list-contents">
                     {/* {this.getSpecialityList()} */}
-                    <select value={this.state.selectedSpeciality} onChange={this.specialityDropdownSelected}>
-                        <option value="">Select Speciality</option>
+                    <Select className="select-speciality-dropdown" value={this.state.selectedSpeciality} onChange={this.specialityDropdownSelected}>
+                        {/* <option value=""></option> */}
                         {
                             this.state.specialityList.map((speciality, index) => (
-                                <option value={speciality}>{speciality}</option>
+                                <MenuItem value={speciality}>{speciality}</MenuItem>
                             ))
                         }
-                    </select>
+                    </Select>
                 </div>
 
                 {this.state.filteredDoctors.length > 0 && (
@@ -116,21 +116,23 @@ class DoctorList extends Component {
                                     <p>Doctor Name : {doctor.firstName + " " + doctor.lastName}</p>
                                     <p>Speciality : {doctor.speciality}</p>
                                     <p>Rating : <Rating value={doctor.rating}></Rating> </p>
-                                    {/* onClick={()=>{this.props.onClick()}} */}
+                                    
+                                    <div>
                                     <Button 
                                         variant="contained"
                                         color="primary"
-                                        className="book-appointment-button" 
+                                        style={{ width: "45%", margin: "10px" }}
                                         onClick={()=>{this.showBookAppointmentDialogue(doctor)}}>
                                             Book Appointment
                                     </Button>
                                     <Button 
                                         variant="contained"
-                                        color="inherit"
-                                        className="view-details-button" 
+                                        color="secondary"
+                                        style={{width: "45%", margin: "10px", backgroundColor: "#008000"}}
                                         onClick={()=>{this.showDoctorDetailsDialogue(doctor)}}>
                                             View Details
                                     </Button>
+                                    </div>
                                 </div>
                             </Paper>
                         ))}

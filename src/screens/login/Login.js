@@ -5,6 +5,7 @@ import {
     FormControl,
     InputLabel,
     Typography,
+    Card,
 } from "@material-ui/core";
 import React, { Component } from "react";
 import TabContainer from "../../common/tabContainer/TabContainer";
@@ -80,6 +81,11 @@ class Login extends Component {
     inputLoginPasswordChangeHandler = (e) => {
         this.setState({ loginPassword: e.target.value });
     };
+
+    validateEmail = (value) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(value);
+    };
     
     render() {
         return (<TabContainer>
@@ -90,10 +96,25 @@ class Login extends Component {
                     type="text"
                     username={this.state.username}
                     onChange={this.inputUsernameChangeHandler}
-                />
-                <FormHelperText className={this.usernameRequired}>
-                    <span className="red">required</span>
-                </FormHelperText>
+                    onInvalid="Please fill"/>
+                {this.state.username !== "" && !this.validateEmail(this.state.username) && (
+                  <FormHelperText error>Enter a valid Email</FormHelperText>
+                )}
+                {this.state.username === "" && !this.validateEmail(this.state.username) && (
+                  <FormHelperText>
+                    <Card
+                      raised
+                      style={{
+                        backgroundColor: "#333333",
+                        color: "white",
+                        textAlign: "center",
+                        padding: "10px",
+                      }}
+                    >
+                      Please fill out this field
+                    </Card>
+                  </FormHelperText>
+                )}
             </FormControl>
             <br />
             <br />
@@ -105,9 +126,21 @@ class Login extends Component {
                     loginpassword={this.state.loginPassword}
                     onChange={this.inputLoginPasswordChangeHandler}
                 />
-                <FormHelperText className={this.state.loginPasswordRequired}>
-                    <span className="red">required</span>
-                </FormHelperText>
+                {this.state.loginPassword === "" && (
+                  <FormHelperText>
+                    <Card
+                      raised
+                      style={{
+                        backgroundColor: "#333333",
+                        color: "white",
+                        textAlign: "center",
+                        padding: "10px",
+                      }}
+                    >
+                      Please fill out this field
+                    </Card>
+                  </FormHelperText>
+                  )}
             </FormControl>
             <br />
             <br />

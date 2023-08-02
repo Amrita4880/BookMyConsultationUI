@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import "./BookAppointment.css";
-import { Button, Card, CardActionArea, CardContent, CardHeader, Input, InputLabel, MenuItem, Select, TextField, Typography } from "@material-ui/core";
+import { Button, Card, CardActionArea, CardContent, CardHeader, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Input, InputLabel, MenuItem, Select, TextField, Typography } from "@material-ui/core";
 import { KeyboardDatePicker, MuiPickersUtilsProvider, TimePicker } from "@material-ui/pickers";
 import DateFnsUtils from '@date-io/date-fns';
 import { Label } from "@material-ui/icons";
@@ -16,18 +16,27 @@ class BookAppointment extends Component {
             userEmailId: sessionStorage.getItem("user-email"),
 
             doctorName: this.props.doctorInfo.firstName + " " + this.props.doctorInfo.lastName,
+            doctorTimeSlot: [],
             appointmentDate: "2023-08-01",
-            appointmentTimeSlot: "9 AM - 10 AM",
+            appointmentTimeSlot: "",
             medicalHistory: "",
-            symptoms: ""
+            symptoms: "",
+
+            openErrorAlertDialog: false,
+            closeErrorAlertDialog: false,
+
+            openSuccessAlertDialog: false,
+            closeSuccessAlertDialog: false
         }
     }
 
     componentDidMount() {
+
     }
 
     handleSubmit = () => {
-
+        this.setState({openSuccessAlertDialog : false});
+        this.setState({openErrorAlertDialog : false});
         try {
             // Perform form submission logic and send POST request
             const response = fetch("http://localhost:8080/appointments", {
@@ -54,7 +63,10 @@ class BookAppointment extends Component {
                 // Handle success case
                 console.log("Appointment booked successfully!");
                 this.props.closeModal();
+                this.setState({openSuccessAlertDialog : true})
+                
             } else {
+                this.setState({openErrorAlertDialog : true})
                 // Handle error case
                 console.error("Failed to book appointment. Please try again.");
             }
@@ -66,8 +78,23 @@ class BookAppointment extends Component {
         // onClose();
     };
 
-    appointmentDateChangeHandler = (e) => {
-        this.setState({ appointmentDate: e.target.value });
+    appointmentDateChangeHandler = (date, value) => {
+        this.setState({ appointmentDate: value });
+        try {
+            fetch('http://localhost:8080/doctors/' + this.props.doctorInfo.id + '/timeSlots?date=' + this.state.appointmentDate, {
+                headers: {
+                    "Content-Type": "application/json",
+                    // "Authorization": "Bearer " + this.loggedInAccessToken
+                    // "Authorization": "Bearer " + "eyJraWQiOiIzYmMwOTVmYi00NGQ4LTQ0ZjktOTJlNC1hZTFkYjUzYzliOTIiLCJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJhdWQiOiJwYW5kZXlhbXJpdGE2NEBnbWFpbC5jb20iLCJpc3MiOiJodHRwczovL2Jvb2tteWNvbnN1bHRhdGlvbi5jb20iLCJleHAiOjE2OTA5MjgsImlhdCI6MTY5MDkwMH0.0z_VQtupO5rackBtdD28whX-7M3eMCGhhT_I9T7eHN8A9RGNdNm-G73pWFQTR6h2w7ZyJIMmlKT9LQizvGvbDg"
+                    "Authorization": "Bearer " + sessionStorage.getItem("access-token")
+                }
+            })
+                .then((response) => response.json())
+                .then((data) => this.setState({ doctorTimeSlot: data.timeSlot }))
+
+        } catch (error) {
+            console.error("Unable to fetch doctors details", error);
+        }
     };
     appointmentTimeSlotChangeHandler = (e) => {
         this.setState({ appointmentTimeSlot: e.target.value });
@@ -95,7 +122,7 @@ class BookAppointment extends Component {
                             id="doctorName"
                             className="doctor-name-text-field"
                             label="Doctor's Name*"
-                            defaultValue={this.props.doctorName}
+                            defaultValue={this.state.doctorName}
                             InputProps={{ readOnly: true }}>
                         </TextField>
                         <br /><br />
@@ -114,20 +141,12 @@ class BookAppointment extends Component {
                         <Select label="Timeslot"
                             value={this.state.appointmentTimeSlot}
                             onChange={this.appointmentTimeSlotChangeHandler}
-                            defaultValue="9 AM - 10 AM"
+                            defaultValue="9AM-10AM"
                         >
-                            <MenuItem value="9 AM - 10 AM">9 AM - 10 AM</MenuItem>
-                            <MenuItem value="10 AM - 11 AM">10 AM - 11 AM</MenuItem>
-                            <MenuItem value="11 AM - 12 AM">11 AM - 12 AM</MenuItem>
-                            <MenuItem value="12 PM - 1 PM">12 PM - 1 PM</MenuItem>
-                            <MenuItem value="1 PM - 2 PM">1 PM - 2 PM</MenuItem>
-                            <MenuItem value="2 PM - 3 PM">2 PM - 3 PM</MenuItem>
-                            <MenuItem value="3 PM - 4 PM">3 PM - 4 PM</MenuItem>
-                            <MenuItem value="4 PM - 5 PM">4 PM - 5 PM</MenuItem>
-                            <MenuItem value="5 PM - 6 PM">5 PM - 6 PM</MenuItem>
-                            <MenuItem value="6 PM - 7 PM">6 PM - 7 PM</MenuItem>
-                            <MenuItem value="7 PM - 8 PM">7 PM - 8 PM</MenuItem>
-                            <MenuItem value="8 PM - 9 PM">8 PM - 9 PM</MenuItem>
+                            <MenuItem value="None">None</MenuItem>
+                            {this.state.doctorTimeSlot.map((timeSlot, index) => (
+                                <MenuItem value={timeSlot}>{timeSlot}</MenuItem>
+                            ))}
                         </Select>
                         <br /><br />
 
@@ -152,9 +171,79 @@ class BookAppointment extends Component {
                             color="primary"
                             className="book-appointment-button"
                             onClick={this.handleSubmit}>
-                            Submit
+                            BOOK APPOINTMENT
                         </Button>
                     </div>
+
+                    {this.state.openErrorAlertDialog &&
+                        (<Dialog
+                            open={this.state.openAlertDialog}
+                            onClose={this.state.closeAlertDialog}
+                            aria-labelledby="alert-dialog-title"
+                            aria-describedby="alert-dialog-description"
+                            className="alert-dialog-style"
+                        >
+                            <DialogTitle
+                                id="alert-dialog-title"
+                                className="alert-title-style"
+                            >
+                                &#127760; {window.location.origin}
+                            </DialogTitle>
+                            <DialogContent className="alert-content-style">
+                                <DialogContentText
+                                    id="alert-dialog-description"
+                                    className="alert-text-style"
+                                >
+                                    Either the slot is already booked or not available
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions className="alert-content-style">
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    className="alert-button-style"
+                                >
+                                    OK
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
+                        )}
+
+                    {this.state.openSuccessAlertDialog &&
+                        (
+                            <Dialog
+                                open={this.state.openAlertDialog}
+                                onClose={this.state.closeAlertDialog}
+                                aria-labelledby="alert-dialog-title"
+                                aria-describedby="alert-dialog-description"
+                                className="alert-dialog-style"
+                            >
+                                <DialogTitle
+                                    id="alert-dialog-title"
+                                    className="alert-title-style"
+                                >
+                                    &#127760; {window.location.origin}
+                                </DialogTitle>
+                                <DialogContent className="alert-content-style">
+                                    <DialogContentText
+                                        id="alert-dialog-description"
+                                        className="alert-text-style"
+                                    >
+                                        Appointment Booked Successfully
+                                    </DialogContentText>
+                                </DialogContent>
+                                <DialogActions className="alert-content-style">
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={this.props.closeModal()}
+                                        className="alert-button-style"
+                                    >
+                                        OK
+                                    </Button>
+                                </DialogActions>
+                            </Dialog>
+                        )}
                 </CardContent>
             </Card>
         )

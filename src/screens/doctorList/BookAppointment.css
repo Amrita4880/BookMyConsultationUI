@@ -39,3 +39,24 @@
 .doctor-name-text-field{
     pointer-events: none;
 }
+
+.alert-dialog-style{
+    z-index: 999;
+}
+
+.alert-title-style{
+    background-color: rgba(0, 0, 0, 0.785);
+    color: white;
+}
+
+.alert-content-style{
+    background-color: rgba(0, 0, 0, 0.785);
+}
+
+.alert-text-style{
+    color: white;
+}
+
+.alert-button-style{
+    background-color: grey;
+}
